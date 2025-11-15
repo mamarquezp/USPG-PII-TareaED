@@ -147,6 +147,7 @@ namespace USPG_PII_TareaED
             playlist.AddLast(new Song("Bohemian Rhapsody", "Queen", 355));
             playlist.AddLast(new Song("Hotel California", "Eagles", 390));
             playlist.AddLast(new Song("Smells Like Teen Spirit", "Nirvana", 301));
+            playlist.AddLast(new Song("Don't Cry", "Guns N' Roses", 314));
         }
 
 
