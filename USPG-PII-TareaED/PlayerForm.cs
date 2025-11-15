@@ -9,11 +9,13 @@ namespace USPG_PII_TareaED
     {
         private Label lblTitle;
         private Label lblArtist;
+        private Label lblDuration;
         private Button btnPrev;
         private Button btnNext;
         private Button btnShuffle;
         private Button btnAddSong;
         private Button btnExport;
+        private Button btnDelete;
 
         private CircularPlaylist playlist;
 
@@ -32,92 +34,79 @@ namespace USPG_PII_TareaED
         {
             lblTitle = new Label();
             lblArtist = new Label();
+            lblDuration = new Label(); 
             btnPrev = new Button();
             btnNext = new Button();
             btnShuffle = new Button();
             btnAddSong = new Button();
             btnExport = new Button();
+            btnDelete = new Button();
             SuspendLayout();
-            // 
-            // lblTitle
-            // 
+
+            this.Text = "Reproductor de Música Circular";
+            this.ClientSize = new Size(400, 200);
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+
             lblTitle.Font = new Font("Arial", 16F, FontStyle.Bold);
-            lblTitle.Location = new Point(10, 20);
-            lblTitle.Name = "lblTitle";
+            lblTitle.Location = new Point(10, 15); 
             lblTitle.Size = new Size(380, 30);
-            lblTitle.TabIndex = 0;
             lblTitle.Text = "---";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // lblArtist
-            // 
+
             lblArtist.Font = new Font("Arial", 10F);
-            lblArtist.Location = new Point(10, 50);
-            lblArtist.Name = "lblArtist";
+            lblArtist.Location = new Point(10, 45);
             lblArtist.Size = new Size(380, 20);
-            lblArtist.TabIndex = 1;
             lblArtist.Text = "Presiona 'Agregar Canción'";
             lblArtist.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // btnPrev
-            // 
+
+            lblDuration.Font = new Font("Arial", 10F, FontStyle.Italic);
+            lblDuration.Location = new Point(10, 65);
+            lblDuration.Size = new Size(380, 20);
+            lblDuration.Text = "--:--";
+            lblDuration.TextAlign = ContentAlignment.MiddleCenter;
+            lblDuration.ForeColor = Color.Gray;
+
             btnPrev.Location = new Point(20, 100);
-            btnPrev.Name = "btnPrev";
             btnPrev.Size = new Size(100, 40);
-            btnPrev.TabIndex = 2;
             btnPrev.Text = "<< Anterior";
             btnPrev.Click += BtnPrev_Click;
-            // 
-            // btnNext
-            // 
+
             btnNext.Location = new Point(150, 100);
-            btnNext.Name = "btnNext";
             btnNext.Size = new Size(100, 40);
-            btnNext.TabIndex = 3;
             btnNext.Text = "Siguiente >>";
             btnNext.Click += BtnNext_Click;
-            // 
-            // btnShuffle
-            // 
+
             btnShuffle.Location = new Point(280, 100);
-            btnShuffle.Name = "btnShuffle";
             btnShuffle.Size = new Size(100, 40);
-            btnShuffle.TabIndex = 4;
             btnShuffle.Text = "Shuffle";
             btnShuffle.Click += BtnShuffle_Click;
-            // 
-            // btnAddSong
-            // 
-            btnAddSong.Location = new Point(4, 150);
-            btnAddSong.Name = "btnAddSong";
-            btnAddSong.Size = new Size(200, 30);
-            btnAddSong.TabIndex = 5;
-            btnAddSong.Text = "Agregar Canción";
+
+            btnAddSong.Location = new Point(10, 150);
+            btnAddSong.Size = new Size(120, 30);
+            btnAddSong.Text = "Agregar";
             btnAddSong.Click += BtnAddSong_Click;
-            // 
-            // btnExport
-            // 
-            btnExport.Location = new Point(210, 150);
-            btnExport.Name = "btnExport";
-            btnExport.Size = new Size(180, 30);
-            btnExport.TabIndex = 6;
+
+            btnDelete.Location = new Point(140, 150);
+            btnDelete.Size = new Size(120, 30);
+            btnDelete.Text = "Eliminar Actual";
+            btnDelete.Click += BtnDelete_Click; 
+            btnDelete.ForeColor = Color.Red;
+
+            btnExport.Location = new Point(270, 150);
+            btnExport.Size = new Size(120, 30);
             btnExport.Text = "Exportar JSON";
             btnExport.Click += BtnExport_Click;
-            // 
-            // PlayerForm
-            // 
-            ClientSize = new Size(400, 200);
+
             Controls.Add(lblTitle);
             Controls.Add(lblArtist);
+            Controls.Add(lblDuration);
             Controls.Add(btnPrev);
             Controls.Add(btnNext);
             Controls.Add(btnShuffle);
             Controls.Add(btnAddSong);
             Controls.Add(btnExport);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
-            Name = "PlayerForm";
-            Text = "Reproductor de Música Circular";
+            Controls.Add(btnDelete);
             ResumeLayout(false);
         }
 
@@ -127,18 +116,23 @@ namespace USPG_PII_TareaED
             {
                 lblTitle.Text = "---";
                 lblArtist.Text = "Playlist Vacía";
+                lblDuration.Text = "--:--";
                 btnPrev.Enabled = false;
                 btnNext.Enabled = false;
                 btnShuffle.Enabled = false;
+                btnDelete.Enabled = false; 
             }
             else
             {
                 Song? current = playlist.CurrentSong;
                 lblTitle.Text = current.Title;
                 lblArtist.Text = current.Artist;
+                lblDuration.Text = FormatDuration(current.DurationInSeconds); 
+
                 btnPrev.Enabled = true;
                 btnNext.Enabled = true;
-                btnShuffle.Enabled = (playlist.Count > 1);
+                btnDelete.Enabled = true;  
+                btnShuffle.Enabled = (playlist.Count > 1); 
             }
         }
 
@@ -177,6 +171,26 @@ namespace USPG_PII_TareaED
             UpdateUI();
         }
 
+        private void BtnDelete_Click(object sender, EventArgs e)
+        {
+            if (playlist.IsEmpty) return;
+
+            Guid idParaEliminar = playlist.CurrentSong.Id;
+
+            DialogResult confirm = MessageBox.Show(
+                $"¿Estás seguro de que quieres eliminar '{playlist.CurrentSong.Title}'?",
+                "Confirmar Eliminación",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                playlist.RemoveById(idParaEliminar);
+
+                UpdateUI();
+            }
+        }
+
         private void BtnExport_Click(object sender, EventArgs e)
         {
             string jsonContent = playlist.ExportToJson();
@@ -197,6 +211,13 @@ namespace USPG_PII_TareaED
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
             }
+        }
+
+        private string FormatDuration(int totalSeconds)
+        {
+            TimeSpan duration = TimeSpan.FromSeconds(totalSeconds);
+
+            return duration.ToString(@"m\:ss");
         }
     }
 }
